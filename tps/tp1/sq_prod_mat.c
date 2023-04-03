@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include <sys/time.h>
-
+#include <omp.h>
 
 // Default dimension for matrix size
 #ifndef VAL_M
@@ -15,8 +15,18 @@
 int main() {
 
   int m=VAL_M, n=VAL_N;
-//  double a[m][n], b[n][m], c[m][m];
-  
+//double a[m][n], b[n][m], c[m][m];
+  double **a = (double **) malloc(m * sizeof(double *));
+  double **b = (double **) malloc(n * sizeof(double *));
+  double **c = (double **) malloc(m * sizeof(double *));
+
+  for (int i=0; i < m; i++) {
+	  a[i] = (double *) malloc(n * sizeof(double));
+	  c[i] = (double *) malloc(m * sizeof(double));
+  }
+  for (int i=0; i < n; i++) {
+	  b[i] = (double *) malloc(m * sizeof(double));
+  }
   struct timeval t_elapsed_0, t_elapsed_1;
   double t_elapsed;
 
@@ -31,18 +41,19 @@ int main() {
   gettimeofday(&t_elapsed_0, NULL);
 
   // Initialization of matrices A, B and C.
+#pragma omp parallel for
   for(int i=0; i < m; i++) {
     for(int j=0; j < n; j++) {
       a[i][j] = (i+1)+(j+1);
     }
   }
-
+#pragma omp parallel for
   for(int i=0; i < n; i++) {
     for(int j=0; j < m; j++) {
       b[i][j] = (i+1)-(j+1);
     }
   }
-
+#pragma omp parallel for
   for(int i=0; i < m; i++) {
     for(int j=0; j < m; j++) {
       c[i][j] = 0;
@@ -50,6 +61,7 @@ int main() {
   }
 
   // Matrix product
+#pragma omp parallel for collapse(2)
   for(int i=0; i < m; i++) {
     for(int j=0; j < m; j++) {
       for(int k=0; k < n; k++) {
