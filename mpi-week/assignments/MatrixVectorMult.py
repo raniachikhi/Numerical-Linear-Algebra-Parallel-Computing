@@ -52,7 +52,6 @@ if RANK == 0:
     A.setdiag(rand(SIZE))
     A = A.toarray()
     b = rand(SIZE)
-    print("The condition number of A is", np.linalg.cond(A))
 else :
     A = None
     b = None
